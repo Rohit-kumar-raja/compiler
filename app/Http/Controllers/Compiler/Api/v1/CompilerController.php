@@ -10,7 +10,12 @@ class CompilerController extends Controller
     public function run(Request $request)
     {
         if ($request->code && $request->lang) {
-            $file = fopen(env('COMPILER'), 'w');
+            $unique_folder = uniqid("code");
+            mkdir(env("COMPILER") . $unique_folder);
+            $uniqu_file=uniqid('c').'.php';
+            $complete_file=env("COMPILER") .$unique_folder. "/" .$uniqu_file;
+            touch($complete_file);
+            $file = fopen($complete_file, 'w');
             if ($request->lang == "php") {
                 $text = "<?php " . $request->code . " ?>";
             } else {
@@ -18,7 +23,7 @@ class CompilerController extends Controller
             }
 
             fwrite($file, $text);
-            $command = $request->lang . " " . env('COMPILER') . " 2>&1";
+            $command = "cd ".env('COMPILER').$unique_folder.";". $request->lang . " " . $complete_file . " 2>&1";
             exec($command, $output, $exitStatus);
 
             if ($exitStatus !== 0) {
